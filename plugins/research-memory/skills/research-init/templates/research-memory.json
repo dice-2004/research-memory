@@ -8,5 +8,5 @@
   "timezone": "Asia/Tokyo",
   "memory_max_chars": 6000,
   "transcript_retention_days": 14,
-  "template_version": "0.3.3"
+  "template_version": "0.3.4"
 }

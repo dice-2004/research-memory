@@ -61,6 +61,7 @@ See docs/datasets.md for dataset-specific caveats.
 - Check whether differences between methods fall within the spread. Whether a statistical test is needed depends on the situation (do not apply a particular test mechanically); note in the discussion what you considered.
 - With a single run per setting, treat differences no larger than the run-to-run or environment-to-environment differences you have observed (e.g., in a reproduction) as unresolved; do not interpret their direction.
 - Report in this form: the final table (the file people read), the comparison values with their sources, and the verification results (exit code, output audits, code changes during the run). Check the auxiliary files yourself and raise any problem **before** showing the numbers.
+- When showing a table, always give its file path, and briefly explain how to read it (which columns to look at, what to compare) from the basics if the user is new to the field.
 - **Separate observed results from interpretation.**
 - **Record failed experiments and bad results too.** Do not cherry-pick favorable results.
 
