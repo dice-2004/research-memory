@@ -22,8 +22,8 @@ If `docs/how_to_run.md` exists, it is the authoritative run procedure: follow it
 
 ## 2. Experiment IDs and branches
 
-- Give every experiment a unique ID: `exp-001`, `exp-002`, … (current maximum + 1). If `CONTRIBUTING.md` defines branch names, keep the experiment ID equal to the branch number.
-- Output goes to `outputs/exp-XXX/` (or the results directory named in AGENTS.md). **Never overwrite an existing experiment directory.**
+- Give every experiment a unique ID `exp-NNN`, where NNN is the branch number from `CONTRIBUTING.md` (e.g., branch `exp/004_topk` → `exp-004`). New branches take the current maximum + 1. Several runs that belong together (e.g., a reproduction) share one ID and one branch.
+- Output goes to `outputs/exp-NNN_<name>/` (or the results directory named in AGENTS.md). **Never overwrite an existing experiment directory**; to redo a run while keeping the old one, use a new ID.
 - Always use the ID in logs, MEMORY.md, and reports.
 - When the experiment (branch) starts, add one row to `docs/experiments.md`.
 

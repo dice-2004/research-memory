@@ -24,15 +24,15 @@
 ```
 src/ configs/ scripts/   研究コード（設定値は configs/ に集約）
 data/                    データ（変更しない）
-outputs/exp-XXX/         実験結果（実験IDごと。上書きしない）
+outputs/exp-NNN_<名前>/  実験結果（実験ID＝ブランチ番号。上書きしない）
 docs/                    研究の背景・関連研究・データセット仕様
 docs/papers/             1論文1ノート。目次は docs/papers/README.md（自動生成）。検索記録と総括は docs/literature/
 MEMORY.md                研究の現在の状態（編集はユーザー承認制）
 logs/YYYY-MM-DD.md       研究上のイベントの記録（1日1ファイル、追記のみ）
 CONTRIBUTING.md          ブランチ命名規則とタグの付け方（ブランチを作るとき・タグを付けるときに読む）
 docs/how_to_run.md       実験の実行手順（正本）
-docs/experiments.md      実験・ブランチ一覧（1実験1行: 目的・状態・結果の場所・結論）
-docs/results.md          結果の索引（1実験1行: 最終の表のパス・主な数値・比較相手の出典・確認・ログ）
+docs/experiments.md      実験・ブランチ一覧（ID＝ブランチ番号。目的・状態・結果の場所・結論を1行ずつ）
+docs/results.md          結果の索引（実験ごとに最終の表のパス・主な数値・比較相手の出典・確認・ログ）
 docs/decisions.md        MEMORY.md から外した過去の設計判断（アーカイブ）
 ```
 
