@@ -1,5 +1,5 @@
 {
-  "description": "研究の記憶（MEMORY.md / logs/）の読み込み・記録漏れ防止・承認制を強制する",
+  "description": "研究の記憶（MEMORY.md / logs/）の読み込み・記録漏れ防止・承認制・エージェントの編集の記録",
   "hooks": {
     "SessionStart": [
       {
@@ -57,6 +57,21 @@
             "command": "python3",
             "args": [
               "${CLAUDE_PLUGIN_ROOT}/scripts/guard_memory.py"
+            ],
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3",
+            "args": [
+              "${CLAUDE_PLUGIN_ROOT}/scripts/record_edit.py"
             ],
             "timeout": 10
           }

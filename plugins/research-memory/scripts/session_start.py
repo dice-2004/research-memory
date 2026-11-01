@@ -50,6 +50,41 @@ def version_tuple(v):
     return tuple(int(p) for p in parts) if parts else (0,)
 
 
+def annotate_status(root, lines):
+    """git status の各行に、エージェントが編集したファイルかどうかの印を付ける。
+
+    record_edit.py（PostToolUse）が残した記録と、今の更新時刻を比べる。
+    未コミットでなくなったファイルの記録は消す。
+    """
+    st = load_state(root)
+    edits = st.get("agent_edits", {})
+    if not edits:
+        return lines
+    seen = set()
+    out = []
+    for line in lines:
+        rel = line[3:].split(" -> ")[-1].strip().strip('"')
+        if rel.endswith("/"):  # 未追跡のディレクトリ
+            inside = [k for k in edits if k.startswith(rel)]
+            seen.update(inside)
+            if inside:
+                line += f"  [contains {len(inside)} file(s) edited by the agent]"
+        elif rel in edits:
+            seen.add(rel)
+            e = edits[rel]
+            cur = os.path.getmtime(os.path.join(root, rel)) if os.path.exists(os.path.join(root, rel)) else None
+            if cur is not None and abs(cur - e.get("mtime", 0)) < 1.0:
+                line += f"  [agent {e.get('at', '')}]"
+            else:
+                line += f"  [agent {e.get('at', '')}, changed since]"
+        out.append(line)
+    pruned = {k: v for k, v in edits.items() if k in seen}
+    if pruned != edits:
+        st["agent_edits"] = pruned
+        save_state(root, st)
+    return out
+
+
 def latest_log(root, exclude):
     logs = os.path.join(root, "logs")
     files = sorted(
@@ -135,16 +170,20 @@ def main():
     # 4. 作業ツリーの変更（ユーザーによるコード変更の検出用）
     status = run_git(["status", "--short"], root)
     if status and status.strip():
-        lines = status.strip().splitlines()
+        lines = annotate_status(root, [l for l in status.rstrip().splitlines() if l.strip()])
         out.append("\n## Uncommitted changes (git status)")
         out.extend(lines[:30])
         if len(lines) > 30:
             out.append(f"... and {len(lines) - 30} more")
         out.append(
-            "Some of these may have been made by the agent in an earlier session: check 「変更したファイル・コード」 "
-            "in today's and the latest logs first. Changes that are not recorded there were made by the user. "
-            "Do not guess their intent: ask the user, and record the answer in the log."
+            "[agent ...] = edited by the agent's file tools at that time and unchanged since. "
+            "[agent ..., changed since] = the agent edited it, then something else changed it. "
+            "Lines without a mark were not edited by the agent's file tools: they may be the user's changes, "
+            "or the agent's shell commands (check 「変更したファイル・コード」 in recent logs). "
+            "For changes that are not the agent's, do not guess the intent: ask the user, and record the answer in the log."
         )
+    elif status is not None:
+        annotate_status(root, [])  # 作業ツリーがきれいなら、編集の記録を消す
     log = run_git(["log", "-5", "--format=%h %ad %s", "--date=short"], root)
     if log and log.strip():
         out.append("\n## Recent commits")

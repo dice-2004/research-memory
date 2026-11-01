@@ -30,6 +30,8 @@ Do not record general programming questions, fixes that do not affect the resear
 - **Never rewrite existing blocks.** Append new blocks at the end of the file.
 - After appending a block, **add one line to the 目次 at the top**: `- [HH:MM 短い要約](#hhmm-短い要約)`
 - Block heading: `## HH:MM 短い要約` (time in the same time zone as the file name).
+- **Following up on earlier blocks.** Because blocks are never rewritten, when an earlier 「次にやること・申し送り」 is done or withdrawn, an earlier （未決定） item is decided, or an earlier block turns out to be wrong, say so in the new block and name the earlier one by date and time (e.g., 「2026-10-20 17:02 の申し送りは取り下げ」「2026-10-29 10:15 の案は採らない」「2026-10-20 17:02 の記録では 01・03 だけと書いたが、02 も同じだった」).
+- A proposal waiting for the user's answer is recorded with 種類 「意思決定（未決定）」 and 決めた人 「（未決定。ユーザーの返事待ち）」; the answer gets its own block that names the proposal.
 
 ## 3. Block contents (write only the fields that apply)
 
@@ -41,8 +43,11 @@ Do not record general programming questions, fixes that do not affect the resear
 
 **目的・きっかけ**
 **変更したファイル・コード**
+- `<パス>`: <何をどう変えたか>
+- 挙動への影響: <計算・結果が変わるか>
 **経緯・判断根拠**
 - 観測した事実:
+- 確認したこと: <実行・照合して確かめたこと。確かめていないことは「未確認」>
 - 採用した判断とその理由:
 - 却下した選択肢とその理由:
 **ユーザーとのやり取り**
@@ -58,6 +63,7 @@ Rules:
 - Do not dump your whole thought process. Write the research decision and its grounds.
 - Never write secrets (passwords, API keys), personal information, or raw data contents (lab members can see the repository).
 - Always write numbers together with the experiment ID.
+- Record only what has happened. Something the user plans (a merge, a push, a meeting) is written as 予定, not as done; when MEMORY.md or docs/ are written ahead of time on the user's instruction, say so and correct them once the real state is known.
 - Do not record planned events as done (e.g., "merged" before the merge happened), even if asked to write ahead; write them as planned (「予定」) and update once they happen.
 - When an earlier 申し送り is resolved or withdrawn, say so in the new block with the time of the earlier block (e.g., 「10:15 の申し送りは取り下げ」), so the next session does not pick it up again.
 - When the user states a standing preference or rule (e.g., "don't run anything when I ask for an estimate"), also propose adding it to AGENTS.md; a rule that exists only in a log is easily lost.

@@ -17,6 +17,7 @@
 | Stop（AI判定） | 応答が終わるたび | 議論での決定・考察・ミーティング報告などがあったのにログに書いていなければ、ログを書かせる |
 | PreCompact | コンテキスト圧縮の直前 | 会話の全文の控えを `.git/research-memory/transcripts/` に保存（圧縮後に未記録の内容をログに起こせるように）。控えは14日で自動削除 |
 | PreToolUse | ファイル編集・コマンド実行の前 | MEMORY.md への書き込みを毎回あなたの承認制にする |
+| PostToolUse | ファイル編集の後 | エージェントが編集したファイルを記録する（コミットせずに残った変更を、次のセッションで「エージェントの変更」と「あなたの変更」に見分けるため。記録は `.git/research-memory/` の中） |
 
 hooks は、リポジトリのルートに `MEMORY.md` と `logs/` があるときだけ動きます（研究と関係ないリポジトリでは何もしません。ただし Stop の AI 判定だけはプラグインが有効な場所すべてで動くので、下の手順どおり**研究リポジトリ単位で有効化**してください）。
 
@@ -96,7 +97,7 @@ Claude Code で `/reload-plugins` を実行します（開いているセッシ�
 ### 版を上げる側（プラグインを直す人）がすること
 
 - `plugins/research-memory/.claude-plugin/plugin.json` の `version` と、`templates/research-memory.json` の `template_version` を同じ版に上げる
-- コミットに版のタグを付けて push する: `git tag -a v0.3.2 -m "<変更の要約>" && git push origin main --tags`（アップグレード時の差分の一覧は、このタグを使って作られる）
+- コミットに版のタグを付けて push する: `git tag -a v<版> -m "<変更の要約>" && git push origin main --tags`（アップグレード時の差分の一覧は、このタグを使って作られる）
 
 ## ログの形式
 
