@@ -67,6 +67,37 @@ Claude Code で次を実行します。
 
 AGENTS.md・CLAUDE.md・CONTRIBUTING.md・MEMORY.md・docs/（実験一覧 experiments.md、結果の索引 results.md、実行手順 how_to_run.md、過去の判断 decisions.md を含む）・logs/_template.md・.research-memory.json・.gitattributes（ログのマージ設定）が作られます。その後、AGENTS.md・CONTRIBUTING.md・docs/how_to_run.md の `<...>` と docs/research_context.md を埋めてください（AI と相談しながら埋めてかまいません。確定させるのはあなたです）。
 
+## 新しい版に更新する（プラグインと研究リポジトリの両方）
+
+プラグインの更新は2段階です。**1でプラグイン本体（Skills・hooks）が新しくなり、2で研究リポジトリのファイル（AGENTS.md・docs/ など）にテンプレートの変更を取り込みます。** 2をしないと、新しいルールや表の行は研究リポジトリに入りません。リポジトリの版がプラグインより古いと、セッション開始時に Claude が知らせます。
+
+### 1. プラグイン本体（サーバーごとに1回）
+
+```bash
+cd ~/research-memory-marketplace && git pull
+claude plugin list | grep research-memory   # 版を確かめる
+```
+
+Claude Code で `/reload-plugins` を実行します（開いているセッションすべて。新しいセッションでもよい）。
+
+### 2. 研究リポジトリ（リポジトリごとに1回）
+
+1. 作業ツリーをきれいにする（記録や設定の未コミットの変更をコミットしておく）。`CONTRIBUTING.md` の決まりがあれば、更新用のブランチを作る（例: `chore/NNN_update-research-memory`）。
+2. Claude Code で `/research-memory:research-init` を実行する。既存のリポジトリでは**アップグレード**として動き、次の順に進む。
+   - 前回の版（`.research-memory.json` の `template_version`）から、テンプレートの何が変わったかを一覧にする
+   - 足りないファイルだけを追加する（既存のファイルは上書きしない）
+   - ファイルごとに「テンプレートにあって、このリポジトリにない汎用の部分」を示すので、取り込むものを選ぶ。研究固有の内容は残る。あなたの決めたことと食い違う変更は、両方を見せて尋ねる
+   - Claude Code の auto memory にだけある運用ルールがないかを確かめる
+   - `template_version` を更新し、ログに記録する
+3. `git diff` で確かめて、よければ「コミットして」と頼む（AI は依頼されるまでコミットしない）。MR を作るなら、その後に push する。
+
+別のサーバーや別の研究リポジトリでも、同じ手順で更新できます。
+
+### 版を上げる側（プラグインを直す人）がすること
+
+- `plugins/research-memory/.claude-plugin/plugin.json` の `version` と、`templates/research-memory.json` の `template_version` を同じ版に上げる
+- コミットに版のタグを付けて push する: `git tag -a v0.3.2 -m "<変更の要約>" && git push origin main --tags`（アップグレード時の差分の一覧は、このタグを使って作られる）
+
 ## ログの形式
 
 - ファイルは `logs/YYYY-MM-DD.md`（1日1ファイル、日付は日本時間）。研究上のイベントがあったときだけ、末尾にブロックを追記する

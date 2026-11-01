@@ -1,50 +1,62 @@
 ---
 name: research-init
-description: 研究プロジェクトのリポジトリに、研究の記憶の仕組み（AGENTS.md・MEMORY.md・docs/・logs/ など）を初期設定する。新しい研究リポジトリで最初に一度だけ使う。
+description: 研究プロジェクトのリポジトリに、研究の記憶の仕組み（AGENTS.md・MEMORY.md・docs/・logs/ など）を初期設定する。プラグインを更新した後にもう一度使うと、テンプレートの変更点を既存のファイルに取り込む（アップグレード。承認したものだけ反映）。
 disable-model-invocation: true
 ---
 
-# Initializing a research project
+# Initializing or upgrading a research project
 
 **Language: talk to the user in Japanese.** Copy the template files as they are (they are written in Japanese on purpose; do not translate them).
 
-Copy `${CLAUDE_SKILL_DIR}/templates/` to the root of the current git repository to enable the research-memory system.
+Templates live in `${CLAUDE_SKILL_DIR}/templates/`. The plugin version is `version` in `${CLAUDE_SKILL_DIR}/../../.claude-plugin/plugin.json`.
 
-## Steps
+## File map
 
-1. Find the repository root with `git rev-parse --show-toplevel`. If this is not a git repository, stop and tell the user.
+| In templates/ | Destination |
+|---|---|
+| `AGENTS.md` | `AGENTS.md` |
+| `CLAUDE.md` | `CLAUDE.md` (only loads AGENTS.md via `@AGENTS.md`) |
+| `MEMORY.md` | `MEMORY.md` |
+| `CONTRIBUTING.md` | `CONTRIBUTING.md` (branch naming and tags) |
+| Everything under `docs/` (`research_context.md`, `datasets.md`, `related_work.md`, `references.bib`, `how_to_run.md`, `experiments.md`, `results.md`, `decisions.md`, `papers/_template.md`, `papers/README.md` (index), `literature/*.md`) | `docs/` (same layout) |
+| `logs/_template.md` | `logs/_template.md` |
+| `research-memory.json` | `.research-memory.json` |
 
-2. Copy according to this table. **If a file with the same name already exists, do not overwrite it**; tell the user the file name and ask whether to merge or keep it.
+First, find the repository root with `git rev-parse --show-toplevel`. If this is not a git repository, stop and tell the user. Then choose the mode: **Initial setup** if `MEMORY.md` and `logs/` do not exist yet, otherwise **Upgrade**.
 
-   | In templates/ | Destination |
-   |---|---|
-   | `AGENTS.md` | `AGENTS.md` |
-   | `CLAUDE.md` | `CLAUDE.md` (only loads AGENTS.md via `@AGENTS.md`) |
-   | `MEMORY.md` | `MEMORY.md` |
-   | `CONTRIBUTING.md` | `CONTRIBUTING.md` (branch naming and tags) |
-   | Everything under `docs/` (`research_context.md`, `datasets.md`, `related_work.md`, `references.bib`, `how_to_run.md`, `experiments.md`, `results.md`, `decisions.md`, `papers/_template.md`, `papers/README.md` (index), `literature/*.md`) | `docs/` (same layout) |
-   | `logs/_template.md` | `logs/_template.md` |
-   | `research-memory.json` | `.research-memory.json` |
+## A. Initial setup
 
-   **On a second or later run** (e.g., after the plugin was updated), add only the files that do not exist yet. Then:
-   - If the existing `AGENTS.md` differs from the template (e.g., it lacks rows of 「いつ何を使うか」, lines of the structure section, or rules in 「必ず守ること」), show the user the missing parts and offer to merge them, keeping the user's own edits (the `<...>` fields they filled in and any project-specific lines).
-   - If the existing `docs/related_work.md` has old-format entries (sections starting with `### <論文タイトル>`), propose moving each entry into a note at `docs/papers/<citekey>.md` (only after approval).
-
-3. Add this line to `.gitattributes` (create the file if missing, append otherwise). It keeps log lines appended on both branches when branches are merged.
-
-   ```
-   logs/*.md merge=union
-   ```
-
-4. Check that `watch` in `.research-memory.json` (directories whose changes count as research-relevant) matches the repository's actual layout. If not, propose changing it to directories that exist.
-
-5. If `.gitignore` excludes `outputs/`, ask the user whether to commit only the experiment metadata in `outputs/` (configs and metric JSON files). Large files such as checkpoints can stay excluded.
-
-6. Do not commit on your own. Show the user the command below and commit only if they ask.
-
+1. Copy every file in the file map. **Never overwrite an existing file**; if one exists, tell the user and ask whether to merge or keep it.
+2. Add `logs/*.md merge=union` to `.gitattributes` (create or append). It keeps log lines from both branches when branches are merged.
+3. Set `"template_version"` in `.research-memory.json` to the plugin version.
+4. Check that `watch` in `.research-memory.json` (paths whose changes count as research-relevant; files are allowed) matches the actual layout. If not, propose paths that exist, including the results directory.
+5. If `.gitignore` excludes the results directory, ask whether to commit only small metadata (configs, CSV/JSON metrics, run records).
+6. Do not commit on your own. Show this command and commit only if the user asks:
    ```bash
    git add AGENTS.md CLAUDE.md CONTRIBUTING.md MEMORY.md docs/ logs/_template.md .research-memory.json .gitattributes
    git commit -m "notes: 研究の記憶の仕組みを初期設定"
    ```
+7. Tell the user what to fill in next (the `<...>` fields in AGENTS.md, CONTRIBUTING.md and docs/how_to_run.md, docs/research_context.md, docs/datasets.md). They may fill them in together with you, but never fill them with your own guesses; the user confirms the content.
 
-7. Finally, tell the user what to fill in next (the `<...>` fields in AGENTS.md, CONTRIBUTING.md and docs/how_to_run.md, the research questions in docs/research_context.md, and docs/datasets.md). Never fill them in with your own guesses.
+## B. Upgrade (existing repository)
+
+Goal: bring in the **generic** improvements of the new templates without touching project-specific content. Nothing is changed without the user's approval.
+
+1. **Check the starting state.** If `git status` shows uncommitted changes to the files in the file map, ask the user to commit or stash them first (so the upgrade diff stays readable). If `CONTRIBUTING.md` defines a branch for this kind of work (e.g., `chore/NNN_...`), suggest creating it.
+2. **Find what changed in the templates.** Read `template_version` from `.research-memory.json` (missing means older than 0.3.2).
+   - If the plugin directory is a git clone with version tags (`git -C ${CLAUDE_SKILL_DIR} tag -l 'v*'`), list the template changes since that version: `git -C ${CLAUDE_SKILL_DIR} diff v<template_version> HEAD -- templates/`. This is the authoritative list of changes to consider.
+   - Otherwise, compare each existing file with its template section by section.
+3. **Add missing files** from the file map (never overwrite).
+4. **Propose merges, one file at a time.** For each existing file, show only the generic parts that the template has and the file lacks (rules, table rows, sections, columns, structure lines), as a short before/after list, and ask which to apply. Rules:
+   - Keep everything project-specific: filled-in `<...>` fields, the project's own paths, commands, examples, and extra rules the user added. Never replace them with template placeholders.
+   - When the project's version of a section is more detailed than the template, keep the project's version.
+   - When a template change conflicts with something the user decided (e.g., a rule in AGENTS.md or a decision in MEMORY.md), do not resolve it silently; show both and ask.
+   - MEMORY.md edits require approval through the hook, as usual. Never change its contents beyond structural template changes (e.g., a new section heading).
+   - If the existing `docs/related_work.md` has old-format entries (sections starting with `### <論文タイトル>`), propose moving each entry into `docs/papers/<citekey>.md`.
+5. **Check other places where rules may live.** Ask the user whether Claude Code's auto memory (open it with `/memory`) holds project rules or preferences that are missing from AGENTS.md / CONTRIBUTING.md; propose copying them into the repository.
+6. **Check `.research-memory.json`**: `watch` matches the layout (step A-4), and `logs/*.md merge=union` is in `.gitattributes`.
+7. **Finish.** Set `"template_version"` to the plugin version. Record one block in today's log with the research-log Skill (種類: コード変更; which template version, what was applied, what was declined). Then show `git diff --stat` and this command, and commit only if the user asks:
+   ```bash
+   git add AGENTS.md CLAUDE.md CONTRIBUTING.md MEMORY.md docs/ logs/ .research-memory.json .gitattributes
+   git commit -m "notes: research-memory のテンプレートを <版> に更新"
+   ```

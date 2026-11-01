@@ -32,6 +32,24 @@ def toc_of(path, limit=40):
         return []
 
 
+def plugin_version():
+    """プラグインの版（plugin.json の version）。読めなければ空文字。"""
+    path = os.path.join(os.path.dirname(__file__), "..", ".claude-plugin", "plugin.json")
+    try:
+        import json
+
+        with open(path, encoding="utf-8") as f:
+            return str(json.load(f).get("version", ""))
+    except Exception:
+        return ""
+
+
+def version_tuple(v):
+    """'0.3.2' -> (0, 3, 2)。読めない版は (0,) 扱い。"""
+    parts = re.findall(r"\d+", v or "")
+    return tuple(int(p) for p in parts) if parts else (0,)
+
+
 def latest_log(root, exclude):
     logs = os.path.join(root, "logs")
     files = sorted(
@@ -68,6 +86,17 @@ def main():
         f"Today's log file (今日のログファイル): {today_rel} (time zone {cfg['timezone']}). "
         "Follow the research-log Skill when recording. Write all records in Japanese."
     )
+
+    # 0. テンプレートの版: プラグインより古ければ更新を知らせる
+    plugin_ver = plugin_version()
+    repo_ver = str(cfg.get("template_version") or "")
+    if plugin_ver and version_tuple(repo_ver) < version_tuple(plugin_ver):
+        shown = repo_ver or "not recorded"
+        out.append(
+            f"\nNote: this repository's research-memory files follow template version {shown}, "
+            f"but the plugin is {plugin_ver}. Tell the user once, in Japanese, that they can run "
+            "/research-memory:research-init to review the template changes (nothing is changed without approval)."
+        )
 
     # 1. MEMORY.md
     with open(os.path.join(root, "MEMORY.md"), encoding="utf-8") as f:
