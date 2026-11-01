@@ -141,7 +141,8 @@ def main():
         if len(lines) > 30:
             out.append(f"... and {len(lines) - 30} more")
         out.append(
-            "Any of these changes that you (the agent) did not make were made by the user. "
+            "Some of these may have been made by the agent in an earlier session: check 「変更したファイル・コード」 "
+            "in today's and the latest logs first. Changes that are not recorded there were made by the user. "
             "Do not guess their intent: ask the user, and record the answer in the log."
         )
     log = run_git(["log", "-5", "--format=%h %ad %s", "--date=short"], root)

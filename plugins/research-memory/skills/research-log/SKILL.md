@@ -58,6 +58,9 @@ Rules:
 - Do not dump your whole thought process. Write the research decision and its grounds.
 - Never write secrets (passwords, API keys), personal information, or raw data contents (lab members can see the repository).
 - Always write numbers together with the experiment ID.
+- Do not record planned events as done (e.g., "merged" before the merge happened), even if asked to write ahead; write them as planned (「予定」) and update once they happen.
+- When an earlier 申し送り is resolved or withdrawn, say so in the new block with the time of the earlier block (e.g., 「10:15 の申し送りは取り下げ」), so the next session does not pick it up again.
+- When the user states a standing preference or rule (e.g., "don't run anything when I ask for an estimate"), also propose adding it to AGENTS.md; a rule that exists only in a log is easily lost.
 
 ## 4. Updating MEMORY.md
 

@@ -43,7 +43,7 @@ First, find the repository root with `git rev-parse --show-toplevel`. If this is
 Goal: bring in the **generic** improvements of the new templates without touching project-specific content. Nothing is changed without the user's approval.
 
 1. **Check the starting state.** If `git status` shows uncommitted changes to the files in the file map, ask the user to commit or stash them first (so the upgrade diff stays readable). If `CONTRIBUTING.md` defines a branch for this kind of work (e.g., `chore/NNN_...`), suggest creating it.
-2. **Find what changed in the templates.** Read `template_version` from `.research-memory.json` (missing means older than 0.3.2).
+2. **Find what changed in the templates.** Read `template_version` from `.research-memory.json` (missing means older than 0.3.2, i.e., set up before versions were recorded).
    - If the plugin directory is a git clone with version tags (`git -C ${CLAUDE_SKILL_DIR} tag -l 'v*'`), list the template changes since that version: `git -C ${CLAUDE_SKILL_DIR} diff v<template_version> HEAD -- templates/`. This is the authoritative list of changes to consider.
    - Otherwise, compare each existing file with its template section by section.
 3. **Add missing files** from the file map (never overwrite).

@@ -59,6 +59,8 @@ See docs/datasets.md for dataset-specific caveats.
 
 - Do not claim superiority from a single run. Report the mean and spread (e.g., standard deviation) over multiple seeds (roughly 3–5), together with the number of runs.
 - Check whether differences between methods fall within the spread. Whether a statistical test is needed depends on the situation (do not apply a particular test mechanically); note in the discussion what you considered.
+- With a single run per setting, treat differences no larger than the run-to-run or environment-to-environment differences you have observed (e.g., in a reproduction) as unresolved; do not interpret their direction.
+- Report in this form: the final table (the file people read), the comparison values with their sources, and the verification results (exit code, output audits, code changes during the run). Check the auxiliary files yourself and raise any problem **before** showing the numbers.
 - **Separate observed results from interpretation.**
 - **Record failed experiments and bad results too.** Do not cherry-pick favorable results.
 
