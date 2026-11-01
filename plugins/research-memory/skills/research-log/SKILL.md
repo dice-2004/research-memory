@@ -64,8 +64,6 @@ Rules:
 - Never write secrets (passwords, API keys), personal information, or raw data contents (lab members can see the repository).
 - Always write numbers together with the experiment ID.
 - Record only what has happened. Something the user plans (a merge, a push, a meeting) is written as 予定, not as done; when MEMORY.md or docs/ are written ahead of time on the user's instruction, say so and correct them once the real state is known.
-- Do not record planned events as done (e.g., "merged" before the merge happened), even if asked to write ahead; write them as planned (「予定」) and update once they happen.
-- When an earlier 申し送り is resolved or withdrawn, say so in the new block with the time of the earlier block (e.g., 「10:15 の申し送りは取り下げ」), so the next session does not pick it up again.
 - When the user states a standing preference or rule (e.g., "don't run anything when I ask for an estimate"), also propose adding it to AGENTS.md; a rule that exists only in a log is easily lost.
 
 ## 4. Updating MEMORY.md
