@@ -12,10 +12,12 @@ from common import (  # noqa: E402
     find_root,
     load_config,
     load_state,
+    git_status,
     newest_change,
     read_input,
     run_git,
     save_state,
+    state_lock,
     today_log_rel,
 )
 
@@ -26,7 +28,7 @@ def toc_of(path, limit=40):
     """ログファイルの目次（## 見出し）を返す。"""
     try:
         with open(path, encoding="utf-8") as f:
-            heads = [l.rstrip() for l in f if l.startswith("## ") and "目次" not in l]
+            heads = [l.rstrip() for l in f if l.startswith("## ") and l.strip() != "## 目次"]
         return heads[-limit:]
     except Exception:
         return []
@@ -50,38 +52,39 @@ def version_tuple(v):
     return tuple(int(p) for p in parts) if parts else (0,)
 
 
-def annotate_status(root, lines):
-    """git status の各行に、エージェントが編集したファイルかどうかの印を付ける。
+def annotate_status(root, entries):
+    """git status の各項目を表示用の行にし、エージェントが編集したファイルには印を付ける。
 
+    entries は common.git_status() の結果 [(XY, パス), ...]。
     record_edit.py（PostToolUse）が残した記録と、今の更新時刻を比べる。
     未コミットでなくなったファイルの記録は消す。
     """
-    st = load_state(root)
-    edits = st.get("agent_edits", {})
-    if not edits:
-        return lines
-    seen = set()
-    out = []
-    for line in lines:
-        rel = line[3:].split(" -> ")[-1].strip().strip('"')
-        if rel.endswith("/"):  # 未追跡のディレクトリ
-            inside = [k for k in edits if k.startswith(rel)]
-            seen.update(inside)
-            if inside:
-                line += f"  [contains {len(inside)} file(s) edited by the agent]"
-        elif rel in edits:
-            seen.add(rel)
-            e = edits[rel]
-            cur = os.path.getmtime(os.path.join(root, rel)) if os.path.exists(os.path.join(root, rel)) else None
-            if cur is not None and abs(cur - e.get("mtime", 0)) < 1.0:
-                line += f"  [agent {e.get('at', '')}]"
-            else:
-                line += f"  [agent {e.get('at', '')}, changed since]"
-        out.append(line)
-    pruned = {k: v for k, v in edits.items() if k in seen}
-    if pruned != edits:
-        st["agent_edits"] = pruned
-        save_state(root, st)
+    with state_lock(root):
+        st = load_state(root)
+        edits = st.get("agent_edits", {})
+        seen = set()
+        out = []
+        for xy, rel in entries:
+            line = f"{xy} {rel}"
+            if rel.endswith("/"):  # 未追跡のディレクトリ
+                inside = [k for k in edits if k.startswith(rel)]
+                seen.update(inside)
+                if inside:
+                    line += f"  [contains {len(inside)} file(s) edited by the agent]"
+            elif rel in edits:
+                seen.add(rel)
+                e = edits[rel]
+                full = os.path.join(root, rel)
+                cur = os.path.getmtime(full) if os.path.exists(full) else None
+                if cur is not None and abs(cur - e.get("mtime", 0)) < 1.0:
+                    line += f"  [agent {e.get('at', '')}]"
+                else:
+                    line += f"  [agent {e.get('at', '')}, changed since]"
+            out.append(line)
+        pruned = {k: v for k, v in edits.items() if k in seen}
+        if pruned != edits:
+            st["agent_edits"] = pruned
+            save_state(root, st)
     return out
 
 
@@ -109,11 +112,11 @@ def main():
     if data.get("source") != "compact":
         watch = [w for w in cfg.get("watch", []) if os.path.exists(os.path.join(root, w))]
         if watch:
-            st = load_state(root)
-            st["last_notified_change"] = max(
-                st.get("last_notified_change", 0.0), newest_change(root, watch)[0]
-            )
-            save_state(root, st)
+            changed = newest_change(root, watch)[0]
+            with state_lock(root):
+                st = load_state(root)
+                st["last_notified_change"] = max(st.get("last_notified_change", 0.0), changed)
+                save_state(root, st)
 
     out.append("# research-memory: research project memory (loaded automatically)")
     today_rel = today_log_rel(cfg)
@@ -158,7 +161,8 @@ def main():
 
     # 3. archive/ タグのうち MEMORY.md に載っていないもの
     tags = (run_git(["tag", "-l", "archive/*"], root) or "").split()
-    missing = [t for t in tags if t not in memory]
+    # 部分一致で誤って「記録済み」としないよう、タグ名の直後が名前の続きでないことを確かめる
+    missing = [t for t in tags if not re.search(re.escape(t) + r"(?![\w./-])", memory)]
     if missing:
         out.append("\n## Unrecorded archive tags")
         out.append(
@@ -168,9 +172,9 @@ def main():
         )
 
     # 4. 作業ツリーの変更（ユーザーによるコード変更の検出用）
-    status = run_git(["status", "--short"], root)
-    if status and status.strip():
-        lines = annotate_status(root, [l for l in status.rstrip().splitlines() if l.strip()])
+    status = git_status(root)
+    if status:
+        lines = annotate_status(root, status)
         out.append("\n## Uncommitted changes (git status)")
         out.extend(lines[:30])
         if len(lines) > 30:

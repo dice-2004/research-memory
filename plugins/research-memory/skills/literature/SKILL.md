@@ -93,14 +93,14 @@ For how to search (expanding keywords, following citations backward and forward,
 - Fetch BibTeX and append it to `docs/references.bib`:
 
   ```bash
-  python3 "${CLAUDE_SKILL_DIR}/scripts/fetch_bibtex.py" --doi 10.xxxx/xxxx --key <citekey> --append docs/references.bib
-  python3 "${CLAUDE_SKILL_DIR}/scripts/fetch_bibtex.py" --arxiv 2010.11929 --key <citekey> --append docs/references.bib
+  python3 "${CLAUDE_SKILL_DIR}/scripts/fetch_bibtex.py" --doi 10.xxxx/xxxx --key <citekey> --append "$(git rev-parse --show-toplevel)/docs/references.bib"
+  python3 "${CLAUDE_SKILL_DIR}/scripts/fetch_bibtex.py" --arxiv 2010.11929 --key <citekey> --append "$(git rev-parse --show-toplevel)/docs/references.bib"
   ```
 
 - After creating or updating notes, regenerate the index (`docs/papers/README.md`; never edit it by hand):
 
   ```bash
-  python3 "${CLAUDE_SKILL_DIR}/scripts/build_index.py" .
+  python3 "${CLAUDE_SKILL_DIR}/scripts/build_index.py" "$(git rev-parse --show-toplevel)"
   ```
 
 - If there are comparable numbers, add them to the comparison table in `related_work.md` (always with evaluation conditions, the location in the source, and the date checked). Remove papers you have finished reading from 「読む予定」.
@@ -120,7 +120,7 @@ If the evidence is insufficient, do not write a synthesis; write only what is mi
 - Before finishing, check the consistency of note format, sources, BibTeX, links, and the index:
 
   ```bash
-  python3 "${CLAUDE_SKILL_DIR}/scripts/check_papers.py" .
+  python3 "${CLAUDE_SKILL_DIR}/scripts/check_papers.py" "$(git rev-parse --show-toplevel)"
   ```
 
   Fix errors. Review warnings and report them to the user.

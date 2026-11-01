@@ -78,11 +78,12 @@ docs/dev/history.md                        開発の経緯・決定・却下・�
 - Obsidian 連携は「今は」不要（あとで使えるよう、ノートは普通の Markdown リンクで書く。wikilink は使わない）。
 - 機密情報の技術的な遮断（permissions.deny など）は「今は」入れない（AGENTS.md のルールのみ）。
 
-## 現状
+## 現状（最終確認: 2026-11-01）
 
-- 版: 0.3.5（`ddf716c`）。タグ v0.3.0〜v0.3.5 はユーザーがサーバーで付けた。
-- Europa の `~/research-memory-marketplace` はこのリポジトリの clone（0.3.5 まで反映済み）。
-- vitcore-loco は template_version 0.3.5 にアップグレード済み（ブランチ `chore/002_update-research-memory`、MR でマージ予定）。
+- 版: 0.3.6。タグ v0.3.0〜v0.3.5 はユーザーがサーバーで付けて GitHub に push 済み（clone したら `git fetch --tags` で取れる）。v0.3.6 のタグはまだ（ユーザーがサーバーで付ける）。
+- Europa の `~/research-memory-marketplace` はこのリポジトリの clone。プラグインはこのフォルダから直接読み込まれる（`/reload-plugins` の表示で確認済み）。アップグレード時のタグを使った差分も、Europa で動いた（v0.3.1→v0.3.4）。
+- vitcore-loco は template_version 0.3.5 までアップグレード済み（ブランチ `chore/002_update-research-memory`、MR でマージ予定）。0.3.6 の取り込みはまだ。
+- 古くなりやすいので、この節は作業のたびに確かめて日付を更新する。
 
 ## 未検証（実際のセッションでしか確かめられないもの）
 

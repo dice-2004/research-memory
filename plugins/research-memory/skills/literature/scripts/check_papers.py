@@ -22,6 +22,7 @@ claude-scholar（Galaxy-Dawn, MIT License）の verify_paper_notes.py の考え�
 """
 import os
 import re
+from urllib.parse import unquote
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -32,7 +33,8 @@ STATUS = {"to-read", "skimmed", "read"}
 SOURCE_TYPES = {"full-paper", "preprint", "abstract-only", "webpage"}
 WEAK_SOURCES = {"abstract-only", "webpage"}
 REQUIRED_HEADINGS = ("## 要約", "## 主張", "## 評価条件", "## 報告されている結果", "## 自分の研究との関係", "## 読んだ記録")
-LINK_RE = re.compile(r"\]\(([^)\s]+)(?:\s+\"[^\"]*\")?\)")
+# [文字](先) と [文字](<空白を含む 先>) の両方を拾う
+LINK_RE = re.compile(r"\]\((?:<([^>]+)>|([^)\s]+))(?:\s+\"[^\"]*\")?\)")
 STRENGTH_RE = re.compile(r"強さ\s*[:：]\s*(speculative|observed|supported|strong)")
 DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 
@@ -146,12 +148,13 @@ def main():
             text = strip_code(f.read())
         base = os.path.dirname(path)
         in_literature = os.path.dirname(path) == os.path.join(docs, "literature")
-        for target in LINK_RE.findall(text):
+        for m in LINK_RE.finditer(text):
+            target = m.group(1) or m.group(2)
             if re.match(r"^(https?:|mailto:|#|<)", target):
                 continue
             if os.path.basename(target.split("#")[0]) == "citekey.md":
                 continue  # テンプレートの記入例
-            target_path = os.path.normpath(os.path.join(base, target.split("#")[0]))
+            target_path = os.path.normpath(os.path.join(base, unquote(target.split("#")[0])))
             if not os.path.exists(target_path):
                 errors.append(f"{rel(path)}: リンク先 {target} がありません")
                 continue

@@ -20,9 +20,14 @@
 your-research-repo/
 ├── AGENTS.md              # 必ず守るルールと「いつ何を使うか」の表（短く保つ）
 ├── CLAUDE.md              # AGENTS.md を読み込むだけ
+├── CONTRIBUTING.md        # ブランチの名前の付け方とタグの付け方（ブランチは削除しない）
 ├── MEMORY.md              # 現在の研究状態の要約。書き換えは毎回あなたの承認制
 ├── docs/
 │   ├── research_context.md   # 研究の背景・課題・用語（ドメイン知識）
+│   ├── how_to_run.md         # 実験の実行手順（正本）
+│   ├── experiments.md        # 実験・ブランチの一覧（実験ID＝ブランチ番号）
+│   ├── results.md            # 結果の索引（数値を引用するときはここから原本をたどる）
+│   ├── decisions.md          # MEMORY.md から外した過去の設計判断
 │   ├── related_work.md       # 関連研究の入口（比較表・論文一覧・読む予定・未確認）
 │   ├── datasets.md           # データセットの情報
 │   ├── papers/               # 1論文1ノート（<citekey>.md）と目次 README.md（自動生成。GitLab でフォルダを開くと表示）
@@ -31,7 +36,7 @@ your-research-repo/
 ├── logs/
 │   ├── _template.md          # ログの書式見本
 │   └── YYYY-MM-DD.md         # 1日1ファイル。冒頭に目次、イベントごとにブロックを追記
-├── .research-memory.json  # 監視ディレクトリ・タイムゾーンなどの設定
+├── .research-memory.json  # 監視するパス・タイムゾーン・テンプレートの版などの設定
 └── .gitattributes         # logs/*.md の merge=union（ブランチ間でログが衝突しにくくする）
 ```
 
@@ -40,7 +45,7 @@ your-research-repo/
 ### リポジトリ内だが GitLab に上がらないもの
 
 - `.claude/settings.local.json`: `--scope local` でインストールしたときに作られる
-- `.git/research-memory/`: hooks の状態（`state.json`）と、圧縮直前の会話の控え（`transcripts/`、14日で自動削除）
+- `.git/research-memory/`: hooks の状態（`state.json`。エージェントが編集したファイルの記録を含む）と、圧縮直前の会話の控え（`transcripts/`、14日で自動削除）
 
 ## 2. 1日の流れ（会話のしかた）
 
@@ -100,21 +105,22 @@ your-research-repo/
 - **Obsidian**: 今は使いません。ノートは通常の Markdown リンクと YAML の frontmatter で書いているので、将来、リポジトリのフォルダを vault として開けばそのまま読めます。
 - **論文の文章は書きません**。関連研究の節の下書きなどは作りません。
 
-0.1.0 から更新した場合は、研究リポジトリで `/research-memory:research-init` をもう一度実行してください。既存のファイルは上書きされず、足りないファイル（`docs/papers/`、`docs/literature/`、`docs/references.bib`）だけが追加されます。前の書式の `related_work.md` にエントリがあれば、ノートへ移すかどうかを Claude が尋ねます。
+プラグインを更新したら、研究リポジトリで `/research-memory:research-init` をもう一度実行してください（アップグレード）。足りないファイルが追加され、既存のファイルについてはテンプレートの変更点がファイルごとに示されるので、取り込むものを選びます。研究固有の内容は上書きされません。手順の全体は `README.md` の「新しい版に更新する」にあります。
 
 ## 4. 設定（`.research-memory.json`）
 
 | キー | 既定値 | 意味 |
 |---|---|---|
-| `watch` | `["src","configs","scripts","outputs"]` | 変更があればログ記録を促すディレクトリ |
+| `watch` | `["src","configs","scripts"]` | 変更があればログ記録を促すパス（ファイルも可）。実験の出力先は、実行中に変わり続けるので入れない |
 | `timezone` | `Asia/Tokyo` | ログの日付を決めるタイムゾーン（サーバーが UTC でも日本時間で日付を切る） |
 | `memory_max_chars` | `6000` | セッション開始時に読み込ませる MEMORY.md の最大文字数 |
 | `transcript_retention_days` | `14` | 圧縮直前の会話の控えを残す日数 |
+| `template_version` | （初期設定・アップグレード時に記録） | このリポジトリのファイルがどの版のテンプレートに合わせてあるか。プラグインより古いと、セッション開始時に知らされる |
 
 ## 5. うまく動かないとき
 
 - `/plugins` で research-memory が有効になっているか確認する
 - `/hooks` で hooks が登録されているか確認する
 - hooks は、リポジトリのルートに `MEMORY.md` と `logs/` の両方があるときだけ動きます。`research-init` を実行済みか確認してください
-- AI 判定（Stop の prompt hook）のトークン消費や待ち時間が気になる場合は、`plugins/research-memory/hooks/hooks.json` の `"type": "prompt"` のブロックを削除すれば止められます（スクリプトによる記録漏れ検出は残ります）。消費量は `/usage` で確認できます
+- AI 判定（Stop の prompt hook）のトークン消費や待ち時間が気になる場合は、Claude に「research-memory のリポジトリで、Stop の prompt hook を外して版を上げて」と頼みます（サーバーの clone を手で直すと、次の `git pull` とぶつかります）。スクリプトによる記録漏れ検出は残ります。消費量は `/usage` で確認できます
 - prompt hook は、実際の Claude Code セッションでの動作確認ができていません。1週間ほど使って、精度と負荷を確かめてください

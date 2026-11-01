@@ -20,6 +20,7 @@ from common import (  # noqa: E402
     mtime,
     newest_change,
     save_state,
+    state_lock,
     today_log_rel,
 )
 
@@ -39,13 +40,12 @@ def main():
     changed_at, changed_path = newest_change(root, watch)
     log_rel = today_log_rel(cfg)
     log_at = mtime(os.path.join(root, log_rel))
-    state = load_state(root)
-
-    if changed_at <= log_at or changed_at <= state.get("last_notified_change", 0.0):
-        return 0
-
-    state["last_notified_change"] = changed_at
-    save_state(root, state)
+    with state_lock(root):
+        state = load_state(root)
+        if changed_at <= log_at or changed_at <= state.get("last_notified_change", 0.0):
+            return 0
+        state["last_notified_change"] = changed_at
+        save_state(root, state)
     # Claude に渡す理由文（AI だけが読むので英語。記録そのものは日本語で書かせる）
     reason = (
         f"A change that may affect the research (e.g., {changed_path}) is newer than the last update of today's log {log_rel}. "

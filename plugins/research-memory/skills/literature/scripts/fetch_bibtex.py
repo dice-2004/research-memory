@@ -19,7 +19,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-UA = "research-memory/0.2 (BibTeX lookup; mailto not set)"
+UA = "research-memory (Claude Code plugin; BibTeX lookup)"
 ARXIV_ID = re.compile(r"^(\d{4}\.\d{4,5}|[a-z\-]+(\.[A-Z]{2})?/\d{7})(v\d+)?$")
 
 

@@ -2,16 +2,24 @@
 
 Python 標準ライブラリのみを使う（研究サーバーに追加インストール不要）。
 """
+import contextlib
 import json
 import os
 import subprocess
 import sys
+import tempfile
 import time
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
+
+try:  # Unix のみ。Windows ではロックなしで動く
+    import fcntl
+except ImportError:  # pragma: no cover
+    fcntl = None
 
 DEFAULT_CONFIG = {
-    # Stop hook が「研究に影響する変更」とみなすディレクトリ
-    "watch": ["src", "configs", "scripts", "outputs"],
+    # Stop hook が「研究に影響する変更」とみなすパス（ファイルも可）。
+    # 実験の出力先（outputs/ など）は実行中に変わり続けるので入れない
+    "watch": ["src", "configs", "scripts"],
     # ログの日付を決めるタイムゾーン（サーバーがUTCでも日本時間で切る）
     "timezone": "Asia/Tokyo",
     # SessionStart で読み込ませる MEMORY.md の最大文字数
@@ -68,12 +76,19 @@ def load_config(root):
     return cfg
 
 
+# zoneinfo のデータ（tzdata）がない環境でも日付がずれないための固定オフセット
+FIXED_OFFSETS = {"Asia/Tokyo": 9, "UTC": 0, "Etc/UTC": 0}
+
+
 def now(cfg):
+    name = cfg.get("timezone", "Asia/Tokyo")
     try:
         from zoneinfo import ZoneInfo
 
-        return datetime.now(ZoneInfo(cfg.get("timezone", "Asia/Tokyo")))
+        return datetime.now(ZoneInfo(name))
     except Exception:
+        if name in FIXED_OFFSETS:
+            return datetime.now(timezone(timedelta(hours=FIXED_OFFSETS[name])))
         return datetime.now()
 
 
@@ -95,6 +110,24 @@ def state_dir(root):
     return d
 
 
+@contextlib.contextmanager
+def state_lock(root):
+    """state.json の読み書きを排他にする（hook が同時に動いても書き込みが消えないように）。
+
+    使い方: with state_lock(root): st = load_state(root); ...; save_state(root, st)
+    """
+    d = state_dir(root)
+    if fcntl is None:
+        yield
+        return
+    with open(os.path.join(d, "state.lock"), "a") as lf:
+        fcntl.flock(lf, fcntl.LOCK_EX)
+        try:
+            yield
+        finally:
+            fcntl.flock(lf, fcntl.LOCK_UN)
+
+
 def load_state(root):
     path = os.path.join(state_dir(root), "state.json")
     try:
@@ -105,9 +138,43 @@ def load_state(root):
 
 
 def save_state(root, state):
-    path = os.path.join(state_dir(root), "state.json")
-    with open(path, "w", encoding="utf-8") as f:
-        json.dump(state, f, ensure_ascii=False, indent=2)
+    """一時ファイルに書いてから置き換える（読み手が書きかけのファイルを見ないように）。"""
+    d = state_dir(root)
+    fd, tmp = tempfile.mkstemp(dir=d, prefix="state.", suffix=".tmp")
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
+            json.dump(state, f, ensure_ascii=False, indent=2)
+        os.replace(tmp, os.path.join(d, "state.json"))
+    except Exception:
+        with contextlib.suppress(OSError):
+            os.remove(tmp)
+        raise
+
+
+def git_status(root, pathspecs=None):
+    """未コミットの変更を [(XY, パス), ...] で返す。失敗したら None。
+
+    日本語や空白を含むパスもそのまま扱えるよう、-z と core.quotePath=false を使う。
+    名前の変更（R/C）は変更後のパスを返す。
+    """
+    args = ["-c", "core.quotePath=false", "status", "--porcelain", "-z"]
+    if pathspecs:
+        args += ["--", *pathspecs]
+    out = run_git(args, root)
+    if out is None:
+        return None
+    entries = out.split("\0")
+    result, i = [], 0
+    while i < len(entries):
+        e = entries[i]
+        i += 1
+        if len(e) < 4:
+            continue
+        xy, path = e[:2], e[3:]
+        if "R" in xy or "C" in xy:
+            i += 1  # 次の要素は変更前のパス
+        result.append((xy, path))
+    return result
 
 
 def mtime(path):
@@ -122,10 +189,8 @@ def newest_change(root, watch):
     best, best_path = 0.0, None
 
     # 1. 未コミットの変更（追跡対象ファイル + 未追跡ファイル）
-    status = run_git(["status", "--porcelain", "--", *watch], root) or ""
-    for line in status.splitlines():
-        rel = line[3:].split(" -> ")[-1].strip().strip('"')
-        t = mtime(os.path.join(root, rel))
+    for _, rel in git_status(root, watch) or []:
+        t = mtime(os.path.join(root, rel.rstrip("/")))
         if t > best:
             best, best_path = t, rel
 
@@ -136,7 +201,7 @@ def newest_change(root, watch):
         if t > best:
             best, best_path = t, "（コミット済みの変更）"
 
-    # 3. outputs/ など gitignore されたディレクトリは直下のエントリの更新時刻を見る
+    # 3. gitignore されたファイルの変更も拾うため、監視対象の直下のエントリの更新時刻を見る
     for w in watch:
         d = os.path.join(root, w)
         if not os.path.isdir(d):

@@ -17,6 +17,7 @@ from common import (  # noqa: E402
     now,
     read_input,
     save_state,
+    state_lock,
     state_dir,
 )
 
@@ -41,9 +42,10 @@ def main():
         shutil.copy2(src, dest)
     except Exception:
         return 0
-    state = load_state(root)
-    state["last_transcript_backup"] = dest
-    save_state(root, state)
+    with state_lock(root):
+        state = load_state(root)
+        state["last_transcript_backup"] = dest
+        save_state(root, state)
     return 0
 
 

@@ -2,7 +2,7 @@
 
 ## claude-scholar
 
-`skills/literature/` の論文ノートの書式、根拠の強さ（speculative / observed / supported / strong）と弱い出典を根拠にしないルール、検索の進め方、研究ギャップの考え方、`check_papers.py` の確認項目は、claude-scholar（https://github.com/Galaxy-Dawn/claude-scholar）の次のファイルを参考に、日本語で書き直し、このプラグインの書式に合わせて変更したものです。
+`skills/literature/` の論文ノートの書式、根拠の強さ（speculative / observed / supported / strong）と弱い出典を根拠にしないルール、検索の進め方、研究ギャップの考え方、`check_papers.py` の確認項目は、claude-scholar（https://github.com/Galaxy-Dawn/claude-scholar）の次のファイルを参考に、要約して書き直し、このプラグインの書式に合わせて変更したものです（Skill の本文と references は英語、記録の書式は日本語）。
 
 - skills/research-ideation/references/research-contract.md
 - skills/research-ideation/references/literature-search-strategies.md

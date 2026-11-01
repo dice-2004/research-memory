@@ -10,7 +10,7 @@ import sys
 from datetime import datetime
 
 sys.path.insert(0, os.path.dirname(__file__))
-from common import find_root, load_config, load_state, mtime, now, read_input, save_state  # noqa: E402
+from common import find_root, load_config, load_state, mtime, now, read_input, save_state, state_lock  # noqa: E402
 
 FILE_TOOLS = {"Edit", "Write", "MultiEdit", "NotebookEdit"}
 MAX_ENTRIES = 500
@@ -33,18 +33,19 @@ def main():
         return 0
     rel = os.path.relpath(abs_path, real_root).replace(os.sep, "/")
 
-    state = load_state(root)
-    edits = state.get("agent_edits", {})
-    try:
-        when = now(load_config(root)).strftime("%Y-%m-%d %H:%M")
-    except Exception:
-        when = datetime.now().strftime("%Y-%m-%d %H:%M")
-    edits[rel] = {"mtime": mtime(abs_path), "at": when}
-    if len(edits) > MAX_ENTRIES:
-        for k in sorted(edits, key=lambda k: edits[k].get("mtime", 0))[: len(edits) - MAX_ENTRIES]:
-            del edits[k]
-    state["agent_edits"] = edits
-    save_state(root, state)
+    with state_lock(root):
+        state = load_state(root)
+        edits = state.get("agent_edits", {})
+        try:
+            when = now(load_config(root)).strftime("%Y-%m-%d %H:%M")
+        except Exception:
+            when = datetime.now().strftime("%Y-%m-%d %H:%M")
+        edits[rel] = {"mtime": mtime(abs_path), "at": when}
+        if len(edits) > MAX_ENTRIES:
+            for k in sorted(edits, key=lambda k: edits[k].get("mtime", 0))[: len(edits) - MAX_ENTRIES]:
+                del edits[k]
+        state["agent_edits"] = edits
+        save_state(root, state)
     return 0
 
 

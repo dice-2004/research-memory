@@ -30,6 +30,8 @@
 | 研究リポジトリのアップグレードの仕組み（research-init のアップグレードモード、template_version、版のタグ、古いとセッション開始時に通知） | 今後も同じ手順で更新できるように | 0.3.2 |
 | エージェントの編集の記録（PostToolUse）と、未コミットの変更への `[agent …]` の印 | コミットを依頼制にしたので、AI の変更とユーザーの変更を取り違えやすい（vitcore-loco 2026-10-25 19:33 の懸念） | 0.3.3 |
 | ブランチは一切削除しない（不採用は archive/ タグ） | README と CONTRIBUTING.md の矛盾をユーザーが「削除しない」で決着 | 0.3.5 |
+| **変更を加えて実験をやり直すときは、新しいブランチと実験ID**（結果は新しい `exp-NNN_<名前>/`）。変更なしのやり直しは同じIDで、上書きになるなら先に確認 | ユーザーの決定（vitcore-loco の `results/exp-NNN_<名前>/` の形が一番よい） | 0.3.6 |
+| `watch` の既定から `outputs/` を外す | 実験の実行中に変わり続け、Stop hook が毎回止めるため（`results/` を外したのと同じ理由） | 0.3.6 |
 
 ## 3. 検討して採らなかったもの
 
@@ -57,6 +59,7 @@
 | 0.3.3 | 825a6af | ログからの教訓、エージェントの編集の記録、git status の不具合修正 |
 | 0.3.4 | b3f80b4 | auto memory からの汎用ルール |
 | 0.3.5 | ddf716c | ブランチは一切削除しない |
+| 0.3.6 | （このコミット） | サブエージェントのレビューで見つかった不具合の修正: hook の同時実行で state.json の記録が消える、日本語のファイル名に印が付かない、`outputs/` の監視、AI が勝手にコミットしうる手順、生成ファイルの統合、実験IDの決まり、古い README-use 等。試験を23項目に |
 
 ## 5. 未解決・未検証
 
@@ -64,7 +67,8 @@
 - `fetch_bibtex.py` の実ネットワークでの動作。
 - auto mode・Projects の「Work locally」での PreToolUse の承認の挙動。
 - PostToolUse の印の、実際のセッションでの挙動。
-- vitcore-loco の `chore/002_update-research-memory` は MR でマージ予定。マージ後の experiments.md の更新は、次のブランチ exp/003 の最初の作業（vitcore-loco 側の MEMORY.md に記載済み）。
+- （2026-11-01 時点）vitcore-loco の `chore/002_update-research-memory` は MR でマージ予定。マージ後の experiments.md の更新は、次のブランチ exp/003 の最初の作業（vitcore-loco 側の MEMORY.md に記載済み）。0.3.6 の取り込みはまだ。
+- `guard_memory.py` は `git pull` / `git switch` / `git cherry-pick` による MEMORY.md の変更を検出しない（レビューで指摘。実害は小さいので保留）。
 
 ## 6. やりたいこと（ユーザーが言えば着手。勝手には始めない）
 

@@ -137,6 +137,56 @@ def main():
                            capture_output=True, text=True)
         check("build_index.py --check: 実行できる", p.returncode in (0, 1), p.stdout + p.stderr)
 
+        # 6b. 同時に動く hook・日本語のパス・名前の変更・archive タグ・日本語のリンク
+        git(repo, "add", "-A")
+        git(repo, "commit", "-qm", "c3")
+        names = [f"src/p{i}.py" for i in range(20)]
+        for n in names:
+            with open(os.path.join(repo, n), "w") as f:
+                f.write("x\n")
+        procs = [subprocess.Popen([sys.executable, os.path.join(SCRIPTS, "record_edit.py")],
+                                  stdin=subprocess.PIPE, text=True) for _ in names]
+        for pr, n in zip(procs, names):
+            pr.communicate(json.dumps({"cwd": repo, "tool_name": "Write",
+                                       "tool_input": {"file_path": os.path.join(repo, n)}}))
+        with open(os.path.join(repo, ".git", "research-memory", "state.json")) as f:
+            kept = json.load(f).get("agent_edits", {})
+        check("PostToolUse: 20件を同時に記録しても消えない", all(n in kept for n in names), f"{len(kept)}/20")
+        for n in names:
+            os.remove(os.path.join(repo, n))
+
+        jp = os.path.join(repo, "src", "日本語 名.py")
+        with open(jp, "w") as f:
+            f.write("x\n")
+        hook("record_edit.py", {"cwd": repo, "tool_name": "Write", "tool_input": {"file_path": jp}})
+        git(repo, "mv", "src/a.py", "src/b.py")
+        _, out, _ = hook("session_start.py", {"cwd": repo, "source": "startup"})
+        check("SessionStart: 日本語・空白を含むファイル名にも印が付く", "?? src/日本語 名.py  [agent " in out, out[-700:])
+        check("SessionStart: 名前の変更は変更後のパスで表示する", "R  src/b.py" in out, out[-700:])
+        git(repo, "mv", "src/b.py", "src/a.py")
+        os.remove(jp)
+
+        git(repo, "tag", "archive/exp/001_x")
+        with open(os.path.join(repo, "MEMORY.md"), "a") as f:
+            f.write("\n| 案 | 理由 | 自分 | `archive/exp/001_x-v2` |\n")
+        _, out, _ = hook("session_start.py", {"cwd": repo, "source": "startup"})
+        check("SessionStart: 名前の一部だけ一致する archive タグは未記録として知らせる",
+              "Unrecorded archive tags" in out and "archive/exp/001_x" in out)
+        git(repo, "checkout", "-q", "MEMORY.md")
+        git(repo, "tag", "-d", "archive/exp/001_x")
+
+        note = os.path.join(repo, "docs", "literature", "overview.md")
+        with open(os.path.join(repo, "docs", "papers", "日本語.md"), "w") as f:
+            f.write("x\n")
+        with open(note, "a") as f:
+            f.write("\n[参考](../papers/%E6%97%A5%E6%9C%AC%E8%AA%9E.md)\n")
+        p = subprocess.run([sys.executable, os.path.join(LIT, "check_papers.py"), repo],
+                           capture_output=True, text=True)
+        check("check_papers.py: URL エンコードされた日本語のリンクを切れていると判定しない",
+              "リンク先 ../papers/%E6" not in p.stdout, p.stdout[-500:])
+        git(repo, "checkout", "-q", "docs/literature/overview.md")
+        os.remove(os.path.join(repo, "docs", "papers", "日本語.md"))
+
         # 7. 研究リポジトリでない場所では何もしない
         other = os.path.join(base, "other")
         os.makedirs(other)
