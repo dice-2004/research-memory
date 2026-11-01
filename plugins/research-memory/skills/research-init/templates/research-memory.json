@@ -1,0 +1,6 @@
+{
+  "watch": ["src", "configs", "scripts", "outputs"],
+  "timezone": "Asia/Tokyo",
+  "memory_max_chars": 6000,
+  "transcript_retention_days": 14
+}

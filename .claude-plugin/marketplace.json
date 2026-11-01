@@ -1,0 +1,14 @@
+{
+  "name": "research-tools",
+  "description": "研究用の Claude Code プラグイン",
+  "owner": {
+    "name": "Daisuke Horii"
+  },
+  "plugins": [
+    {
+      "name": "research-memory",
+      "source": "./plugins/research-memory",
+      "description": "研究の記憶をセッションをまたいで失わないための hooks と Skills"
+    }
+  ]
+}

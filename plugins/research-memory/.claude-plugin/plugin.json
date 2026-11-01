@@ -1,0 +1,8 @@
+{
+  "name": "research-memory",
+  "version": "0.3.0",
+  "description": "研究プロジェクトの記憶（MEMORY.md / logs/）と文献管理（docs/papers/）をセッションをまたいで失わないための hooks と Skills",
+  "author": {
+    "name": "Daisuke Horii"
+  }
+}

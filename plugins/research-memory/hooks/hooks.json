@@ -1,0 +1,67 @@
+{
+  "description": "研究の記憶（MEMORY.md / logs/）の読み込み・記録漏れ防止・承認制を強制する",
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3",
+            "args": [
+              "${CLAUDE_PLUGIN_ROOT}/scripts/session_start.py"
+            ],
+            "timeout": 20
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3",
+            "args": [
+              "${CLAUDE_PLUGIN_ROOT}/scripts/stop_check.py"
+            ],
+            "timeout": 20
+          },
+          {
+            "type": "prompt",
+            "timeout": 30,
+            "prompt": "You judge whether a research-log entry is missing. Below is the information (JSON) at the end of a Claude Code response.\n\n$ARGUMENTS\n\nRules:\n1. If stop_hook_active is true, always return {\"ok\": true}.\n2. Read last_assistant_message and decide whether any of the following happened in this turn: (a) a research decision was settled (research question, hypothesis, metric, baseline, data split, adopting or rejecting a method, etc.); (b) a discussion or interpretation of experimental results was given; (c) the user reported something decided with the advisor, in a seminar, or in a meeting; (d) the user explained the intent of a code change they made; (e) a research-relevant finding from related work was obtained.\n3. If any applies and the response does not show that it was already recorded in logs/ (e.g., a block was appended to the log), return {\"ok\": false, \"reason\": \"<1-2 sentences on what to record; tell Claude to record it in the log with the research-log Skill (the meeting-note Skill for meeting reports), writing the record in Japanese>\"}.\n4. Return {\"ok\": true} for general programming questions, work that does not affect the research, things already recorded, or cases too minor to be sure.\nOutput JSON only."
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3",
+            "args": [
+              "${CLAUDE_PLUGIN_ROOT}/scripts/pre_compact.py"
+            ],
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit|NotebookEdit|Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3",
+            "args": [
+              "${CLAUDE_PLUGIN_ROOT}/scripts/guard_memory.py"
+            ],
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}
