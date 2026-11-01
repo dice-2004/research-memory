@@ -80,9 +80,9 @@ docs/dev/history.md                        開発の経緯・決定・却下・�
 
 ## 現状（最終確認: 2026-11-01）
 
-- 版: 0.3.6。タグ v0.3.0〜v0.3.5 はユーザーがサーバーで付けて GitHub に push 済み（clone したら `git fetch --tags` で取れる）。v0.3.6 のタグはまだ（ユーザーがサーバーで付ける）。
+- 版: 0.3.6。タグ v0.3.0〜v0.3.6 はユーザーがサーバーで付けて GitHub に push 済み（clone したら `git fetch --tags` で取れる）。
 - Europa の `~/research-memory-marketplace` はこのリポジトリの clone。プラグインはこのフォルダから直接読み込まれる（`/reload-plugins` の表示で確認済み）。アップグレード時のタグを使った差分も、Europa で動いた（v0.3.1→v0.3.4）。
-- vitcore-loco は template_version 0.3.5 までアップグレード済み（ブランチ `chore/002_update-research-memory`、MR でマージ予定）。0.3.6 の取り込みはまだ。
+- vitcore-loco は template_version 0.3.6 までアップグレード済み。`chore/002_update-research-memory` は MR で master にマージ済み（2026-11-01 16:05 にユーザーから完了の連絡）。マージ後の `docs/experiments.md` の 002 の状態の更新は、vitcore-loco の次のブランチ exp/003 の最初の作業（vitcore-loco の MEMORY.md に記載済み）。
 - 古くなりやすいので、この節は作業のたびに確かめて日付を更新する。
 
 ## 未検証（実際のセッションでしか確かめられないもの）

@@ -59,7 +59,7 @@
 | 0.3.3 | 825a6af | ログからの教訓、エージェントの編集の記録、git status の不具合修正 |
 | 0.3.4 | b3f80b4 | auto memory からの汎用ルール |
 | 0.3.5 | ddf716c | ブランチは一切削除しない |
-| 0.3.6 | （このコミット） | サブエージェントのレビューで見つかった不具合の修正: hook の同時実行で state.json の記録が消える、日本語のファイル名に印が付かない、`outputs/` の監視、AI が勝手にコミットしうる手順、生成ファイルの統合、実験IDの決まり、古い README-use 等。試験を23項目に |
+| 0.3.6 | 8a53de0 | サブエージェントのレビューで見つかった不具合の修正: hook の同時実行で state.json の記録が消える、日本語のファイル名に印が付かない、`outputs/` の監視、AI が勝手にコミットしうる手順、生成ファイルの統合、実験IDの決まり、古い README-use 等。試験を23項目に |
 
 ## 5. 未解決・未検証
 
@@ -67,7 +67,7 @@
 - `fetch_bibtex.py` の実ネットワークでの動作。
 - auto mode・Projects の「Work locally」での PreToolUse の承認の挙動。
 - PostToolUse の印の、実際のセッションでの挙動。
-- （2026-11-01 時点）vitcore-loco の `chore/002_update-research-memory` は MR でマージ予定。マージ後の experiments.md の更新は、次のブランチ exp/003 の最初の作業（vitcore-loco 側の MEMORY.md に記載済み）。0.3.6 の取り込みはまだ。
+- （2026-11-01 16:05 時点）vitcore-loco は 0.3.6 まで取り込み済みで、`chore/002_update-research-memory` は master にマージ済み（ユーザーの連絡）。マージ後の experiments.md の 002 の更新は、次のブランチ exp/003 の最初の作業（vitcore-loco 側の MEMORY.md に記載済み）。
 - `guard_memory.py` は `git pull` / `git switch` / `git cherry-pick` による MEMORY.md の変更を検出しない（レビューで指摘。実害は小さいので保留）。
 
 ## 6. やりたいこと（ユーザーが言えば着手。勝手には始めない）
