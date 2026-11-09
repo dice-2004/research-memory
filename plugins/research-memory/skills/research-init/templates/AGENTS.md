@@ -69,6 +69,7 @@ docs/decisions.md        MEMORY.md から外した過去の設計判断（アー
 | 研究課題・仮説・手法・実験設計を扱う | `docs/research_context.md` を読む |
 | 前処理・データ分割・評価を触る | `docs/datasets.md` を読む |
 | 関連研究を引用・比較する | `docs/papers/README.md`（目次）で探し、該当するノートと `docs/related_work.md` の比較表を読む |
+| セッションを始めた（作業の前） | `git branch --show-current` でブランチを確かめる。自動で作られた `worktree-bridge-*` の上では作業せず、`CONTRIBUTING.md` の「Claude Code の作業場所」に従って規則どおりのブランチにする |
 | ブランチを作る・名前を決める | `CONTRIBUTING.md` を読み、`docs/experiments.md` に1行足す |
 | 実験の結果が出た | **`docs/results.md` に1行足す**（`docs/how_to_run.md` §4）。`docs/experiments.md` の該当行（状態・結論）も更新する |
 | 結果・数値を探す・引用する（MEMORY.md・報告・発表・卒論） | まず `docs/results.md` を見て、原本（最終の表）のファイルで値を確かめる。どの行から取ったか分かるようにする |
