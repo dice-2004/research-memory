@@ -20,7 +20,7 @@
 your-research-repo/
 ├── AGENTS.md              # 必ず守るルールと「いつ何を使うか」の表（短く保つ）
 ├── CLAUDE.md              # AGENTS.md を読み込むだけ
-├── CONTRIBUTING.md        # ブランチの名前の付け方とタグの付け方（ブランチは削除しない。worktree の使い捨てのブランチは例外）
+├── CONTRIBUTING.md        # ブランチの名前の付け方とタグの付け方（ブランチは削除しない。誤って作られた使い捨てのブランチは例外）
 ├── MEMORY.md              # 現在の研究状態の要約。書き換えは毎回あなたの承認制
 ├── docs/
 │   ├── research_context.md   # 研究の背景・課題・用語（ドメイン知識）

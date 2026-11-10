@@ -73,14 +73,14 @@ docs/dev/history.md                        開発の経緯・決定・却下・�
 - AI は論文・原稿の文章を書かない。手伝うのは調査と研究作業だけ。
 - エージェントは Claude Code だけ。研究リポジトリの記憶は MEMORY.md（今の状態、編集は承認制）＋ logs/（1日1ファイル、目次付き、追記のみ）＋ docs/。
 - 記憶の正本はリポジトリ（Git）。auto memory やプロジェクトメモリに運用ルールを置かない。
-- ブランチは一切削除しない（Claude Code が worktree 用に自動で作る使い捨てのブランチだけは例外、0.3.7）。不採用は `archive/<ブランチ名>` タグ。
+- ブランチは一切削除しない（Claude Code が誤って作った使い捨てのブランチ `worktree-bridge-*` などだけは例外）。不採用は `archive/<ブランチ名>` タグ。
 - AI は研究リポジトリで依頼されるまでコミット・プッシュしない。
 - Obsidian 連携は「今は」不要（あとで使えるよう、ノートは普通の Markdown リンクで書く。wikilink は使わない）。
 - 機密情報の技術的な遮断（permissions.deny など）は「今は」入れない（AGENTS.md のルールのみ）。
 
-## 現状（最終確認: 2026-11-09）
+## 現状（最終確認: 2026-11-10）
 
-- 版: 0.3.7（タグ v0.3.7 は未付与）。タグ v0.3.0〜v0.3.6 はユーザーがサーバーで付けて GitHub に push 済み（clone したら `git fetch --tags` で取れる）。
+- 版: 0.3.8（タグ v0.3.7・v0.3.8 は未付与の可能性あり。0.3.8 で Claude Code の作業場所を「ユーザーと同じフォルダ・同じブランチ」に変更し、worktree 方式は廃止）。タグ v0.3.0〜v0.3.6 はユーザーがサーバーで付けて GitHub に push 済み（clone したら `git fetch --tags` で取れる）。
 - Europa の `~/research-memory-marketplace` はこのリポジトリの clone。プラグインはこのフォルダから直接読み込まれる（`/reload-plugins` の表示で確認済み）。アップグレード時のタグを使った差分も、Europa で動いた（v0.3.1→v0.3.4）。
 - vitcore-loco は template_version 0.3.6 までアップグレード済み。`chore/002_update-research-memory` は MR で master にマージ済み（2026-11-01 16:05 にユーザーから完了の連絡）。マージ後の `docs/experiments.md` の 002 の状態の更新は、vitcore-loco の次のブランチ exp/003 の最初の作業（vitcore-loco の MEMORY.md に記載済み）。
 - 古くなりやすいので、この節は作業のたびに確かめて日付を更新する。
